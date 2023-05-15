@@ -12,12 +12,9 @@ async function run() {
     const mainKtsPath = path.join(tempDir, `${Date.now()}-${Math.floor(Math.random() * 10000)}.main.kts`);
     fs.writeFileSync(mainKtsPath, inputScript);
 
-    const kotlinc = spawn('kotlinc', ['-script', mainKtsPath]);
-    kotlinc.stdout.on('data', (data) => {
-      process.stdout.write(`${data}`);
-    });
-    kotlinc.stderr.on('data', (data) => {
-      console.stderr.write(`${data}`);
+    const kotlinc = spawn('kotlinc', ['-script', mainKtsPath], {
+      stdio: 'inherit',
+      shell: true
     });
     kotlinc.on('close', (code) => {
       process.exitCode = code;
