@@ -1,8 +1,8 @@
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn } = require('child_process');
 
 async function run() {
   try {
@@ -12,13 +12,7 @@ async function run() {
     const mainKtsPath = path.join(tempDir, `${Date.now()}-${Math.floor(Math.random() * 10000)}.main.kts`);
     fs.writeFileSync(mainKtsPath, inputScript);
 
-    const kotlinc = spawn('kotlinc', ['-script', mainKtsPath], {
-      stdio: 'inherit',
-      shell: true
-    });
-    kotlinc.on('close', (code) => {
-      process.exitCode = code;
-    });
+    process.exitCode = await exec.exec('kotlin', [mainKtsPath]);
   } catch (error) {
     core.setFailed(error.message);
   }
