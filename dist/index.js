@@ -2688,28 +2688,19 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 258:
-/***/ ((module) => {
-
-let wait = function (milliseconds) {
-  return new Promise((resolve) => {
-    if (typeof milliseconds !== 'number') {
-      throw new Error('milliseconds not a number');
-    }
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
-};
-
-module.exports = wait;
-
-
-/***/ }),
-
 /***/ 491:
 /***/ ((module) => {
 
 "use strict";
 module.exports = require("assert");
+
+/***/ }),
+
+/***/ 81:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("child_process");
 
 /***/ }),
 
@@ -2835,20 +2826,29 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(186);
-const wait = __nccwpck_require__(258);
+const fs = __nccwpck_require__(147);
+const path = __nccwpck_require__(17);
+const os = __nccwpck_require__(37);
+const { spawn } = __nccwpck_require__(81);
 
-
-// most @actions toolkit packages have async methods
 async function run() {
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
+    const inputScript = core.getInput('script');
+    const tempDir = fs.mkdtempSync(`${os.tmpdir()}${path.sep}`);
 
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    const mainKtsPath = path.join(tempDir, `${Date.now()}-${Math.floor(Math.random() * 10000)}.main.kts`);
+    fs.writeFileSync(mainKtsPath, inputScript);
 
-    core.setOutput('time', new Date().toTimeString());
+    const kotlinc = spawn('kotlinc', ['-script', mainKtsPath]);
+    kotlinc.stdout.on('data', (data) => {
+      console.log(data);
+    });
+    kotlinc.stderr.on('data', (data) => {
+      console.error(data);
+    });
+    kotlinc.on('close', (code) => {
+      process.exitCode = code;
+    });
   } catch (error) {
     core.setFailed(error.message);
   }

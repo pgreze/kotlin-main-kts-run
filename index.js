@@ -1,18 +1,27 @@
 const core = require('@actions/core');
-const wait = require('./wait');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { spawn } = require('child_process');
 
-
-// most @actions toolkit packages have async methods
 async function run() {
   try {
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
+    const inputScript = core.getInput('script');
+    const tempDir = fs.mkdtempSync(`${os.tmpdir()}${path.sep}`);
 
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
+    const mainKtsPath = path.join(tempDir, `${Date.now()}-${Math.floor(Math.random() * 10000)}.main.kts`);
+    fs.writeFileSync(mainKtsPath, inputScript);
 
-    core.setOutput('time', new Date().toTimeString());
+    const kotlinc = spawn('kotlinc', ['-script', mainKtsPath]);
+    kotlinc.stdout.on('data', (data) => {
+      process.stdout.write(`${data}`);
+    });
+    kotlinc.stderr.on('data', (data) => {
+      console.stderr.write(`${data}`);
+    });
+    kotlinc.on('close', (code) => {
+      process.exitCode = code;
+    });
   } catch (error) {
     core.setFailed(error.message);
   }
