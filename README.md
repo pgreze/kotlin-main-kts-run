@@ -13,3 +13,12 @@ Usage:
         script: |
             println("Hello from kotlin")
 ```
+
+## FAQ
+
+> Why not just use `run:` with `shell: kotlin {0}`?
+
+Because `run:` code is stored in a random generated name,
+but the kotlin compiler is expecting a filename suffixed with `.main.kts`
+which is not possible without extra logic/steps.
+This action is allowing a one-step declaration without hack.
