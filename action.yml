@@ -1,5 +1,8 @@
 name: 'Kotlin main kts runner'
 description: 'Run the given code as a main.kts script'
+branding:
+  icon: 'award'
+  color: 'purple'
 inputs:
   script:
     description: 'Kotlin code to run'
