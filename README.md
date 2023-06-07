@@ -8,7 +8,7 @@ assuming kotlin is already installed (which is the default with ubuntu-latest).
 
 Usage:
 ```yaml
-    - uses: pgreze/kotlin-main-kts-run@main
+    - uses: pgreze/kotlin-main-kts-run@1.0
       with:
         script: |
             println("Hello from kotlin")
